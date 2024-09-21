@@ -1,4 +1,5 @@
 import shutil
+from flask import Flask, request, jsonify
 import re
 from googleapiclient.discovery import build
 from pytube import YouTube
@@ -7,7 +8,9 @@ import time
 import yt_dlp as youtube_dl
 import google.generativeai as genai
 import google.api_core.exceptions
-from flet import Flet
+import test
+
+app = Flask(__name__)
 
 GOOGLE_API_KEY = 'AIzaSyBHhq8EjXKqTXXrNXoCZ0m4Mpi1iXbAkTs'
 os.environ['GOOGLE_API_KEY'] = GOOGLE_API_KEY
@@ -51,9 +54,14 @@ def download_youtube_video(yt_url, download_path='./'):
     return file_path
 
 
-@Flet.register_function
-def script_gen(url, script_time, cultural_reference, specific_input):
+@app.route('/process_video', methods=['POST'])
+def process_video():
     try:
+        data = request.json
+        url = data['url']
+        script_time = data['script_time']
+        cultural_reference = data['cultural_reference']
+        specific_input = data['specific_input']
 
         video_id = extract_video_id(url)
 
@@ -82,7 +90,7 @@ def script_gen(url, script_time, cultural_reference, specific_input):
             video_file = genai.get_file(video_file.name)
 
         if video_file.state.name == "FAILED":
-            return {"error": "Video processing failed"}
+            return jsonify({"error": "Video processing failed"}), 500
 
         prompt_sum = "Describe this video, generate it like a summary as a single para with bullet points, then generate another set of texts which deals with the most unique and most shown thing in the video"
 
@@ -113,10 +121,11 @@ def script_gen(url, script_time, cultural_reference, specific_input):
                     retry_count += 1
                     time.sleep(60)
                 except Exception as e:
-                    return {"error": str(e)}
+                    return jsonify({"error": str(e)}), 500
 
             if not response_emotion:
-                return {"error": "Failed to get a response after multiple attempts."}
+                return jsonify({"error": "Failed to get a response after multiple attempts."}), 500
+
         prompt_script = f"Generate a YouTube script for another creator that is similar in content or creates a new content with timestamps, including emotions and background activities. Generate script based on {specific_input}. Generate script starting from 0:00 and end at {script_time}.00, in the script make sure {cultural_reference} movie reference, {cultural_reference} meme reference, few {cultural_reference} words in between, make the script sound very {cultural_reference} and anything related to {cultural_reference} must be added to the script. Finally, suggest similar contents on the internet."
 
         retry_count = 0
@@ -133,19 +142,20 @@ def script_gen(url, script_time, cultural_reference, specific_input):
                 retry_count += 1
                 time.sleep(60)
             except Exception as e:
-                return {"error": str(e)}
+                return jsonify({"error": str(e)}), 500
 
         if not response_script:
-            return {"error": "Failed to get a response after multiple attempts."}
-
-        return {
+            return jsonify({"error": "Failed to get a response after multiple attempts."}), 500
+        test.main(data["url"], response_script.text)
+        return jsonify({
             "video_title": video_title,
             "video_duration": video_duration,
             "response_summary": response_summary.text,
-            "response_script": response_script.text
-        }
+            "response_script": response_script.text,
+        })
     except Exception as e:
-        return {"error": str(e)}
+        return jsonify({"error": str(e)}), 500
 
 
-
+if __name__ == '__main__':
+    app.run(debug=True)
