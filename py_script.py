@@ -8,7 +8,7 @@ import time
 import yt_dlp as youtube_dl
 import google.generativeai as genai
 import google.api_core.exceptions
-import test
+import image_gen
 
 app = Flask(__name__)
 
@@ -146,7 +146,7 @@ def process_video():
 
         if not response_script:
             return jsonify({"error": "Failed to get a response after multiple attempts."}), 500
-        test.main(data["url"], response_script.text)
+        image_gen.main(data["url"], response_script.text)
         return jsonify({
             "video_title": video_title,
             "video_duration": video_duration,
