@@ -1,125 +1,316 @@
 import 'package:flutter/material.dart';
+import 'ScriptGeneratorScreen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Sign Up/Login',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: LoginPage(
+        registeredEmail: 'Email',
+        registeredPassword: 'Password',
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class LoginPage extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+  final String registeredEmail;
+  final String registeredPassword;
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  LoginPage({required this.registeredEmail, required this.registeredPassword});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+        children: [
+          // RichText widget to show different font sizes for text
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 60.0), // Adjust this value as needed
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'VerbaGen\n\n',
+                    style: TextStyle(
+                      fontSize: 26.0, // Smaller font size for "AI Powered"
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'Login to your\nAccount',
+                    style: TextStyle(
+                      fontSize: 44.0, // Larger font size for "ScriptGen"
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 70.0),
+          TextField(
+            controller: emailController,
+            decoration: InputDecoration(
+                prefixIcon: Icon(Icons.person), // Lock icon for password
+
+                labelText: 'Email'),
+          ),
+          TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: InputDecoration(
+                prefixIcon: Icon(Icons.lock), // Lock icon for password
+
+                labelText: 'Password'),
+          ),
+          SizedBox(height: 70),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.purple,
+              padding: EdgeInsets.symmetric(horizontal: 120.0, vertical: 15.0),
+              textStyle: TextStyle(fontSize: 18.0),
+            ),
+            onPressed: () {
+              String email = emailController.text;
+              String password = passwordController.text;
+
+              if (email == registeredEmail && password == registeredPassword) {
+                // Successful login, navigate to HomePage
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomePage()),
+                );
+              } else {
+                // Show error message and option to go back to Sign Up Page
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Invalid email or password')),
+                );
+              }
+            },
+            child: Text('Login'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => SignUpPage()),
+              );
+            },
+            child: Text('Do not have an account? Sign up'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class SignUpPage extends StatelessWidget {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  bool _validateEmail(String email) {
+    final emailPattern = RegExp(r'^[a-zA-Z0-9._%+-]+@scriptgen\.com$');
+    return emailPattern.hasMatch(email);
+  }
+
+  bool _validatePassword(String password) {
+    final passwordPattern = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).+$');
+    return passwordPattern.hasMatch(password);
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+          children: [
+            // RichText widget to show different font sizes for text
+            Padding(
+              padding: const EdgeInsets.only(
+                  top: 60.0), // Adjust this value as needed
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'VerbaGen\n\n',
+                      style: TextStyle(
+                        fontSize: 26.0, // Smaller font size for "AI Powered"
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black,
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'Sign in to your\nAccount',
+                      style: TextStyle(
+                        fontSize: 44.0, // Larger font size for "ScriptGen"
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+
+            SizedBox(height: 70.0),
+
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.person), // Icon for username
+
+                  labelText: 'Email'),
             ),
-          ],
-        ),
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.lock), // Lock icon for password
+
+                  labelText: 'Password'),
+            ),
+            SizedBox(height: 70),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.purple,
+                padding:
+                    EdgeInsets.symmetric(horizontal: 120.0, vertical: 15.0),
+                textStyle: TextStyle(fontSize: 18.0),
+              ),
+              onPressed: () {
+                String email = emailController.text;
+                String password = passwordController.text;
+
+                if (!_validateEmail(email)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Email must be in the format name@scriptgen.com')),
+                  );
+                } else if (!_validatePassword(password)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Password must contain at least one uppercase letter, one lowercase letter, and one special character')),
+                  );
+                } else {
+                  // Navigate to Login Page after registration
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(
+                        registeredEmail: email,
+                        registeredPassword: password,
+                      ),
+                    ),
+                  );
+                }
+              },
+              child: Text('Register'),
+            ),
+          ]),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+        children: [
+          // RichText widget to show different font sizes for text
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 60.0), // Adjust this value as needed
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'AI Powered\n',
+                    style: TextStyle(
+                      fontSize: 26.0, // Smaller font size for "AI Powered"
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'VerbaGen',
+                    style: TextStyle(
+                      fontSize: 54.0, // Larger font size for "ScriptGen"
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 20.0), // Space between text and image
+
+          // Image below the text
+          Image.asset(
+            'assets/Screenshot 2024-07-31 200751.png',
+            width: 520.0, // Adjust the size as needed
+            height: 520.0,
+          ),
+
+          SizedBox(height: 15.0), // Space between image and button
+
+          // Generate button below the image
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Generator()),
+              );
+              // Add your onPressed functionality here
+            },
+            child: Text('Get Started'),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.purple,
+              padding: EdgeInsets.symmetric(horizontal: 120.0, vertical: 15.0),
+              textStyle: TextStyle(fontSize: 18.0),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class Generator extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'YouTube Script Generator',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: ScriptGeneratorScreen(),
     );
   }
 }
