@@ -107,5 +107,5 @@ def main():
     print("\nHere's a prompt for generating your thumbnail\n",image)
 
     generate_image(image)
-
-main()
+if __name__ == "__main__":
+    main()
