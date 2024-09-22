@@ -1,7 +1,5 @@
 # DevJams' 24
 
-Here’s a **GitHub README** for your project, **ImaGen**:
-
 ---
 
 # ImaGen
@@ -47,5 +45,3 @@ We understand the concerns surrounding AI-generated content and copyright. ImaGe
 ImaGen aims to **spark creative thinking** by transforming inspirations into something new and original, helping creators push the boundaries of what’s possible with AI-driven content generation.
 
 ---
-
-Feel free to customize and enhance this README as your project progresses!
