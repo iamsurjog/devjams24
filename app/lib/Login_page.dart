@@ -145,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                             password == widget.registeredPassword) {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => PunchInPage()),
+                            MaterialPageRoute(builder: (context) => ScriptGeneratorScreen()),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
