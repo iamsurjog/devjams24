@@ -1,127 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'ResultScreen.dart';
 
-class ScriptGeneratorScreen extends StatefulWidget {
-  @override
-  _ScriptGeneratorScreenState createState() => _ScriptGeneratorScreenState();
-}
+class ResultScreen extends StatelessWidget {
+  final String videoTitle;
+  final String videoDuration;
+  final String responseSummary;
+  final String responseScript;
 
-class _ScriptGeneratorScreenState extends State<ScriptGeneratorScreen> {
-  final TextEditingController _urlController = TextEditingController();
-  final TextEditingController _scriptTimeController = TextEditingController();
-  final TextEditingController _culturalReferenceController =
-      TextEditingController();
-  final TextEditingController _specificInputController =
-      TextEditingController();
-
-  bool isLoading = false;
-  String? errorMessage;
-
-  Future<void> fetchScript() async {
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-
-    final url = _urlController.text;
-    final scriptTime = _scriptTimeController.text;
-    final culturalReference = _culturalReferenceController.text;
-    final specificInput = _specificInputController.text;
-
-    try {
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/process_video'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'url': url,
-          'script_time': scriptTime,
-          'cultural_reference': culturalReference,
-          'specific_input': specificInput,
-        }),
-      );
-
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResultScreen(
-              videoTitle: data['video_title'],
-              videoDuration: data['video_duration'],
-              responseSummary: data['response_summary'],
-              responseScript: data['response_script'],
-            ),
-          ),
-        );
-      } else {
-        setState(() {
-          errorMessage = data['error'];
-        });
-      }
-    } catch (e) {
-      setState(() {
-        errorMessage = 'An error occurred: $e';
-      });
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
+  ResultScreen({
+    required this.videoTitle,
+    required this.videoDuration,
+    required this.responseSummary,
+    required this.responseScript,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('YouTube Script Generator'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Results'),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'Video Info'),
+              Tab(text: 'Summary'),
+              Tab(text: 'Script'),
+              Tab(text: 'Thumbnail')
+            ],
+          ),
+        ),
+
+        body: TabBarView(
           children: [
-            TextField(
-              controller: _urlController,
-              decoration: InputDecoration(
-                labelText: 'YouTube URL',
-              ),
-            ),
-            TextField(
-              controller: _scriptTimeController,
-              decoration: InputDecoration(
-                labelText: 'Script Time (in minutes)',
-              ),
-            ),
-            TextField(
-              controller: _culturalReferenceController,
-              decoration: InputDecoration(
-                labelText: 'Cultural Reference',
-              ),
-            ),
-            TextField(
-              controller: _specificInputController,
-              decoration: InputDecoration(
-                labelText: 'Inputs',
-              ),
-            ),
-            SizedBox(height: 20),
-            isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: fetchScript,
-                    child: Text('Generate Script'),
-                  ),
-            SizedBox(height: 20),
-            if (errorMessage != null)
-              Text(
-                errorMessage!,
-                style: TextStyle(color: Colors.red),
-              ),
+            VideoInfoTab(videoTitle: videoTitle, videoDuration: videoDuration),
+            SummaryTab(responseSummary: responseSummary),
+            ScriptTab(responseScript: responseScript),
           ],
         ),
       ),
+    );
+  }
+}
+
+class VideoInfoTab extends StatelessWidget {
+  final String videoTitle;
+  final String videoDuration;
+
+  VideoInfoTab({required this.videoTitle, required this.videoDuration});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Video Title: $videoTitle',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Text('Video Duration: $videoDuration',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+class SummaryTab extends StatelessWidget {
+  final String responseSummary;
+
+  SummaryTab({required this.responseSummary});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(responseSummary),
+    );
+  }
+}
+
+class ScriptTab extends StatelessWidget {
+  final String responseScript;
+
+  ScriptTab({required this.responseScript});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Text(responseScript),
     );
   }
 }
