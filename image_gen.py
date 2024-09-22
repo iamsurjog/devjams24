@@ -33,9 +33,11 @@ def get_video_title(video_idd):
     except HttpError as e:
         print(f"Error fetching video title: {e}")
 
-        # clean the title a little bit
+    # clean the name up a lil bit
     cleaned_title = re.sub(r'[^a-zA-Z0-9 ]', '', video_title)
-    # return the video title to use
+    # Split the cleaned title and join back with underscores instead of spaces
+    cleaned_title = '_'.join(cleaned_title.split())
+
     return cleaned_title
 
 
@@ -52,7 +54,7 @@ def save_thumbnail(link, name_to_save):
     print(f"** {name_to_save} Saved!! **")
 
 
-def generate_from_thumb(thumbnail_name, script):
+def generate_from_thumb(original_prompt,thumbnail_name, script):
     thumb = genai.upload_file(path=f"{thumbnail_name}.jpg")
     print(f"Uploaded file '{thumb.display_name}' as: {thumb.uri}")
 
@@ -67,13 +69,20 @@ def generate_from_thumb(thumbnail_name, script):
     image_prompt = f"""Give me just one prompt for an AI so that I can make an image similar to the image and is suitable for my script.
     Here's the script \n{script}"""
 
+    originality_prompt = f"""I want to make sure that the content I'm generating from this idea is not copyrighted. 
+    So can you scour and check if the prompt is an original idea or is already existing and will cause issues.
+    The script is something that i generated from another inspired video from Youtube though.
+    Here is the prompt\n{original_prompt}and here is the script{script}\n Also from a scale of 1-10. Give it a score that 
+    defines originality and the chances of them defending their idea against an isssue."""
+
     # Prompt the model with text and the previously uploaded image.
     text_response = model.generate_content([thumb, text_prompt])
     image_response = model.generate_content([thumb, image_prompt])
+    originality_response = model.generate_content(originality_prompt);
 
     # markdown does not work in vscode and works only n jupyter format
     # display(Markdown(">" + response.text))
-    return text_response.text, image_response.text
+    return text_response.text, image_response.text, originality_response.text
 
 
 def generate_image(image_prompt):
@@ -81,7 +90,7 @@ def generate_image(image_prompt):
     pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
 
     # Move the pipeline to GPU
-    # pipeline.to("cuda")
+    pipeline.to("cuda")
 
     # Generate an image
     result = pipeline(image_prompt).images[0]
@@ -89,8 +98,7 @@ def generate_image(image_prompt):
     # Save or display the result
     result.save("output_image.png")
 
-
-def main(url, script):
+def main(prompt,url,script):
     video_id = extract_video_id(url)
     # try:
     #     f = open(filedialog.askopenfilename(), 'r')
@@ -99,15 +107,18 @@ def main(url, script):
     # except FileNotFoundError:
     video_title = get_video_title(video_id)
     save_thumbnail(url, video_title)
-    text, image = generate_from_thumb(video_title, script)
+    text, image,originality_score = generate_from_thumb(prompt,video_title, script)
 
     print("\n", text)
     print("\nHere's a prompt for generating your thumbnail\n", image)
 
     generate_image(image)
 
+    print("Originality of your new script:\n",originality_score)
+
 
 if __name__ == "__main__":
+    prompt = input("Enter a prompt for script")
     url = input("Enter YouTube link: ")
     script = input("Enter the Script")
-    main(url, script)
+    main(prompt,url, script)
